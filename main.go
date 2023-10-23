@@ -19,13 +19,13 @@ func main() {
 	rootDir, filepathError := filepath.Abs(*rootDirFlag)
 
 	if filepathError != nil {
-		log.Fatalln(filepathError)
+		log.Fatalln("Error parsing root directory: ", filepathError)
 	}
 
-	markdownFiles, err := utils.GetMarkdownFiles(rootDir)
+	markdownFiles, filesError := utils.GetMarkdownFiles(rootDir)
 
-	if err != nil {
-		log.Fatalln(err)
+	if filesError != nil {
+		log.Fatalln("Error opening:", rootDir, filesError)
 	}
 
 	fmt.Println(markdownFiles)
