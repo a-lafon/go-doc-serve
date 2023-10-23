@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/a-lafon/go-doc-serve/utils"
 )
@@ -10,7 +12,15 @@ import (
 func main() {
 	fmt.Println("Starting the program")
 
-	rootDir := "/home/arnaud/Documents/doc"
+	rootDirFlag := flag.String("d", ".", "Root directory contaning documentation")
+
+	flag.Parse()
+
+	rootDir, filepathError := filepath.Abs(*rootDirFlag)
+
+	if filepathError != nil {
+		log.Fatalln(filepathError)
+	}
 
 	markdownFiles, err := utils.GetMarkdownFiles(rootDir)
 
