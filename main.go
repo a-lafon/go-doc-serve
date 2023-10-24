@@ -6,6 +6,8 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/a-lafon/go-doc-serve/fileHandler"
+	"github.com/a-lafon/go-doc-serve/markdownHandler"
 	"github.com/a-lafon/go-doc-serve/utils"
 )
 
@@ -28,7 +30,10 @@ func main() {
 		log.Fatalln("Error opening:", rootDir, filesError)
 	}
 
-	fmt.Println(markdownFiles)
+	fileReader := fileHandler.FileReader{}
 
+	m := markdownHandler.MarkdownFileHandler{Paths: markdownFiles, FileReader: fileReader}
+
+	m.GetMarkdownFiles()
 	fmt.Println("End of program")
 }
