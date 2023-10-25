@@ -26,6 +26,8 @@ func main() {
 
 	markdownFiles, filesError := utils.GetMarkdownFiles(rootDir)
 
+	println(markdownFiles)
+
 	if filesError != nil {
 		log.Fatalln("Error opening:", rootDir, filesError)
 	}
@@ -34,6 +36,8 @@ func main() {
 
 	m := markdownHandler.MarkdownFileHandler{Paths: markdownFiles, FileReader: fileReader}
 
-	m.GetMarkdownFiles()
+	files, filesErrors := m.GetMarkdownFiles()
+	fmt.Println("files", files)
+	fmt.Println("filesErrors", filesErrors)
 	fmt.Println("End of program")
 }
