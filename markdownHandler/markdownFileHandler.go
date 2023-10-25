@@ -23,18 +23,7 @@ func (m *MarkdownFileHandler) GetMarkdownFiles() ([]MarkdownFile, error) {
 
 	for _, path := range m.Paths {
 		wg.Add(1)
-
-		go func(path string) {
-			defer wg.Done()
-
-			data, err := m.FileReader.ReadFile(path)
-
-			if err != nil {
-				return
-			}
-
-			markdownFilesChan <- MarkdownFile{Path: path, Content: data}
-		}(path)
+		go m.readFileAsync(path, &wg, markdownFilesChan)
 	}
 
 	go func() {
@@ -47,4 +36,16 @@ func (m *MarkdownFileHandler) GetMarkdownFiles() ([]MarkdownFile, error) {
 	}
 
 	return markdownFiles, nil
+}
+
+func (m *MarkdownFileHandler) readFileAsync(path string, wg *sync.WaitGroup, c chan<- MarkdownFile) {
+	defer wg.Done()
+
+	data, err := m.FileReader.ReadFile(path)
+
+	if err != nil {
+		return
+	}
+
+	c <- MarkdownFile{Path: path, Content: data}
 }
