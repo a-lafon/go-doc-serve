@@ -1,6 +1,8 @@
 package markdownHandler
 
 import (
+	"sync"
+
 	"github.com/a-lafon/go-doc-serve/fileHandler"
 )
 
@@ -16,15 +18,32 @@ type MarkdownFile struct {
 
 func (m *MarkdownFileHandler) GetMarkdownFiles() ([]MarkdownFile, error) {
 	markdownFiles := make([]MarkdownFile, 0)
+	markdownFilesChan := make(chan MarkdownFile)
+	var wg sync.WaitGroup
 
 	for _, path := range m.Paths {
-		data, err := m.FileReader.ReadFile(path)
+		wg.Add(1)
 
-		if err != nil {
-			return nil, err
-		}
+		go func(path string) {
+			defer wg.Done()
 
-		markdownFiles = append(markdownFiles, MarkdownFile{Path: path, Content: data})
+			data, err := m.FileReader.ReadFile(path)
+
+			if err != nil {
+				return
+			}
+
+			markdownFilesChan <- MarkdownFile{Path: path, Content: data}
+		}(path)
+	}
+
+	go func() {
+		wg.Wait()
+		close(markdownFilesChan)
+	}()
+
+	for mf := range markdownFilesChan {
+		markdownFiles = append(markdownFiles, MarkdownFile{Path: mf.Path, Content: mf.Content})
 	}
 
 	return markdownFiles, nil
