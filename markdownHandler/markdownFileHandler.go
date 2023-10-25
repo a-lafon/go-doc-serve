@@ -18,7 +18,7 @@ type MarkdownFile struct {
 
 func (m *MarkdownFileHandler) GetMarkdownFiles() ([]MarkdownFile, error) {
 	markdownFiles := make([]MarkdownFile, 0)
-	markdownFilesChan := make(chan MarkdownFile)
+	markdownFilesChan := make(chan MarkdownFile, len(m.Paths))
 	var wg sync.WaitGroup
 
 	for _, path := range m.Paths {
