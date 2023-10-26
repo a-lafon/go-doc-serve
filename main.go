@@ -6,9 +6,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/a-lafon/go-doc-serve/fileHandler"
-	"github.com/a-lafon/go-doc-serve/markdownHandler"
-	"github.com/a-lafon/go-doc-serve/utils"
+	"github.com/a-lafon/go-doc-serve/filehandler"
 )
 
 func main() {
@@ -24,20 +22,20 @@ func main() {
 		log.Fatalln("Error parsing root directory: ", filepathError)
 	}
 
-	markdownFiles, filesError := utils.GetMarkdownFiles(rootDir)
+	fileLister := filehandler.Lister{}
+	fileReader := filehandler.Reader{}
 
-	println(markdownFiles)
+	fileExtension := ".md"
+	markdownPaths, filesError := fileLister.GetPathsWithExtension(rootDir, fileExtension)
+
+	println("markdownPaths", markdownPaths)
 
 	if filesError != nil {
 		log.Fatalln("Error opening:", rootDir, filesError)
 	}
 
-	fileReader := fileHandler.FileReader{}
-
-	m := markdownHandler.MarkdownFileHandler{Paths: markdownFiles, FileReader: fileReader}
-
-	files, filesErrors := m.GetMarkdownFiles()
-	fmt.Println("files", files)
+	filesContent, filesErrors := fileReader.ReadMany(markdownPaths)
+	fmt.Println("filesContent", filesContent)
 	fmt.Println("filesErrors", filesErrors)
 	fmt.Println("End of program")
 }
