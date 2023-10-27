@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/a-lafon/go-doc-serve/filehandler"
+	"github.com/a-lafon/go-doc-serve/parser"
 )
 
 func main() {
@@ -17,6 +19,10 @@ func main() {
 	flag.Parse()
 
 	rootDir, filepathError := filepath.Abs(*rootDirFlag)
+	subDir := strings.Split(rootDir, "/")
+	docDir := subDir[len(subDir)-1]
+
+	println(docDir)
 
 	if filepathError != nil {
 		log.Fatalln("Error parsing root directory: ", filepathError)
@@ -37,5 +43,16 @@ func main() {
 	filesContent, filesErrors := fileReader.ReadMany(markdownPaths)
 	fmt.Println("filesContent", filesContent)
 	fmt.Println("filesErrors", filesErrors)
+
+	var markdownConverter parser.Converter = &parser.Markdown{}
+	var markdownTransformer parser.Transformer = &parser.Markdown{}
+
+	for _, file := range filesContent {
+		html, _ := markdownConverter.ToHTML(file.Content)
+		three, _ := markdownTransformer.PathToThree(docDir, string(file.Path))
+
+		println(three, html)
+	}
+
 	fmt.Println("End of program")
 }
