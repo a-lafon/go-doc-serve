@@ -4,10 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"path/filepath"
 	"strings"
 
 	"github.com/a-lafon/go-doc-serve/filehandler"
+	"github.com/a-lafon/go-doc-serve/generator"
+	"github.com/a-lafon/go-doc-serve/page"
 	"github.com/a-lafon/go-doc-serve/parser"
 )
 
@@ -22,14 +25,15 @@ func main() {
 	subDir := strings.Split(rootDir, "/")
 	docDir := subDir[len(subDir)-1]
 
-	println(docDir)
-
 	if filepathError != nil {
 		log.Fatalln("Error parsing root directory: ", filepathError)
 	}
 
 	fileLister := filehandler.Lister{}
 	fileReader := filehandler.Reader{}
+
+	template := page.Template{}
+	defaultTemplate := template.GetDefault(fileReader)
 
 	fileExtension := ".md"
 	markdownPaths, filesError := fileLister.GetPathsWithExtension(rootDir, fileExtension)
@@ -41,18 +45,28 @@ func main() {
 	}
 
 	filesContent, filesErrors := fileReader.ReadMany(markdownPaths)
-	fmt.Println("filesContent", filesContent)
 	fmt.Println("filesErrors", filesErrors)
 
 	var markdownConverter parser.Converter = &parser.Markdown{}
-	var markdownTransformer parser.Transformer = &parser.Markdown{}
+	generator := generator.Generator{Converter: markdownConverter}
 
-	for _, file := range filesContent {
-		html, _ := markdownConverter.ToHTML(file.Content)
-		three, _ := markdownTransformer.PathToThree(docDir, string(file.Path))
+	htmlContents := generator.HtmlContents(filesContent, docDir)
+	htmlMenu := generator.HtmlMenu(htmlContents)
 
-		println(three, html)
-	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		pageDefault := page.Default{}
+		currentPage, _ := pageDefault.Render(htmlContents, htmlMenu, defaultTemplate, r.RequestURI)
+
+		// if err != nil {
+		// 	// log.Fatalln(err)
+		// }
+
+		fmt.Fprint(w, currentPage.Template)
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
 	fmt.Println("End of program")
 }
