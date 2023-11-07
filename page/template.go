@@ -11,7 +11,7 @@ const DEFAULT_TEMPLATE_PATH = "page/default.html"
 
 type Template struct{}
 
-func (t *Template) GetDefault(fileReader filehandler.Reader) string {
+func (t *Template) GetDefault(fileReader *filehandler.Reader) string {
 	defaultTemplate, err := fileReader.Read(DEFAULT_TEMPLATE_PATH)
 	if err != nil {
 		log.Fatal(errors.New("template "+DEFAULT_TEMPLATE_PATH+" not found"), err)

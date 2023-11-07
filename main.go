@@ -14,6 +14,10 @@ import (
 	"github.com/a-lafon/go-doc-serve/parser"
 )
 
+func createPages() {
+
+}
+
 func main() {
 	fmt.Println("Starting the program")
 
@@ -25,45 +29,83 @@ func main() {
 	subDir := strings.Split(rootDir, "/")
 	docDir := subDir[len(subDir)-1]
 
+	fmt.Println(docDir)
+
 	if filepathError != nil {
 		log.Fatalln("Error parsing root directory: ", filepathError)
 	}
 
-	fileLister := filehandler.Lister{}
-	fileReader := filehandler.Reader{}
+	fileLister := &filehandler.Lister{}
+	fileReader := &filehandler.Reader{}
 
-	template := page.Template{}
+	template := &page.Template{}
 	defaultTemplate := template.GetDefault(fileReader)
 
-	fileExtension := ".md"
-	markdownPaths, filesError := fileLister.GetPathsWithExtension(rootDir, fileExtension)
-
-	println("markdownPaths", markdownPaths)
+	markdownPaths, filesError := fileLister.GetPathsWithExtension(rootDir, ".md")
 
 	if filesError != nil {
 		log.Fatalln("Error opening:", rootDir, filesError)
 	}
 
 	filesContent, filesErrors := fileReader.ReadMany(markdownPaths)
-	fmt.Println("filesErrors", filesErrors)
 
-	var markdownConverter parser.Converter = &parser.Markdown{}
-	generator := generator.Generator{Converter: markdownConverter}
+	if len(filesErrors) >= 1 {
+		fmt.Println("Files on error:", filesErrors)
+	}
 
-	htmlContents := generator.HtmlContents(filesContent, docDir)
-	htmlMenu := generator.HtmlMenu(htmlContents)
+	generatorInstance := &generator.Generator{}
+
+	// Generate default menu
+	generatorInstance.SetStrategy(&generator.Menu{})
+	menu, _ := generatorInstance.RenderHTML()
+
+	pages := make([]page.Page[page.Default], 0)
+
+	// Create pages
+	for _, file := range filesContent {
+		content := generator.Content{Converter: &parser.Markdown{}}
+		content.SetDataFromFile(file, docDir)
+
+		generatorInstance.SetStrategy(&content)
+
+		html, err := generatorInstance.RenderHTML()
+
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		pageDefault := page.Default{
+			Title:   content.GetData().Title,
+			Content: html,
+			Menu:    menu,
+		}
+
+		page := page.Page[page.Default]{
+			Title: content.GetData().Title,
+			Url:   content.GetData().Url,
+			Data:  pageDefault,
+		}
+
+		err = page.Assemble(defaultTemplate)
+
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		pages = append(pages, page)
+	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-		pageDefault := page.Default{}
-		currentPage, _ := pageDefault.Render(htmlContents, htmlMenu, defaultTemplate, r.RequestURI)
+		for _, page := range pages {
+			if page.Url == r.RequestURI {
+				fmt.Fprint(w, page.Template)
+				return
+			}
+		}
 
-		// if err != nil {
-		// 	// log.Fatalln(err)
-		// }
-
-		fmt.Fprint(w, currentPage.Template)
+		fmt.Fprint(w, "Error")
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -5,15 +5,17 @@ import (
 	"html/template"
 )
 
-type Page[T any] struct {
-	Template string
-	Data     T
-	Mounted  bool
+type Default struct {
+	Title   string
+	Content template.HTML
+	Menu    template.HTML
 }
 
-func NewPage[T any]() *Page[T] {
-	page := Page[T]{Mounted: false}
-	return &page
+type Page[T any] struct {
+	Title    string
+	Url      string
+	Template string
+	Data     T
 }
 
 func (p *Page[T]) Assemble(htmlTemplate string) error {
@@ -31,7 +33,6 @@ func (p *Page[T]) Assemble(htmlTemplate string) error {
 	}
 
 	p.Template = buffer.String()
-	p.Mounted = true
 
 	return nil
 }

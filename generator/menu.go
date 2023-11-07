@@ -2,15 +2,9 @@ package generator
 
 import "html/template"
 
-type Menu struct {
-	Content template.HTML
-}
+type Menu struct{}
 
-type MenuContent struct {
-	url   string
-	title string
-}
-
-func (m *Menu) toHTML(content []MenuContent) {
-	m.Content = template.HTML("<ul><li>I m the menu<li/></ul>")
+func (m *Menu) ToHTML() (template.HTML, error) {
+	// m.Content = template.HTML("<ul><li>I m the menu<li/></ul>")
+	return "<ul><li>I m the menu<li/></ul>", nil
 }
