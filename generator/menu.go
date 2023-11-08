@@ -1,10 +1,30 @@
 package generator
 
-import "html/template"
+import (
+	"bytes"
+	"html/template"
+)
 
-type Menu struct{}
+type Menu struct {
+	Urls []string
+}
 
 func (m *Menu) ToHTML() (template.HTML, error) {
-	// m.Content = template.HTML("<ul><li>I m the menu<li/></ul>")
-	return "<ul><li>I m the menu<li/></ul>", nil
+	linkTemplate := "<li><a href=\"{{.}}\">{{.}}</a></li>"
+	menuTemplate := "<ul>{{range .}}" + linkTemplate + "{{end}}</ul>"
+
+	t, err := template.New("menu").Parse(menuTemplate)
+	if err != nil {
+		return "", err
+	}
+
+	var resultHTMLBuffer bytes.Buffer
+
+	if err := t.ExecuteTemplate(&resultHTMLBuffer, "menu", m.Urls); err != nil {
+		return "", err
+	}
+
+	resultHTML := resultHTMLBuffer.String()
+
+	return template.HTML(resultHTML), nil
 }
