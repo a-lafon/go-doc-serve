@@ -7,14 +7,15 @@ import (
 	"github.com/a-lafon/go-doc-serve/filehandler"
 )
 
-const DEFAULT_TEMPLATE_PATH = "page/default.html"
+const DEFAULT_TEMPLATE_PATH = "static/html"
 
 type Template struct{}
 
 func (t *Template) GetDefault(fileReader *filehandler.Reader) string {
-	defaultTemplate, err := fileReader.Read(DEFAULT_TEMPLATE_PATH)
+	filePath := DEFAULT_TEMPLATE_PATH + "/default.html"
+	defaultTemplate, err := fileReader.Read(filehandler.Path(filePath))
 	if err != nil {
-		log.Fatal(errors.New("template "+DEFAULT_TEMPLATE_PATH+" not found"), err)
+		log.Fatal(errors.New("template "+filePath+" not found"), err)
 	}
 	return defaultTemplate
 }
