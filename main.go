@@ -93,50 +93,25 @@ func createPages(htmlContents []struct {
 	fileReader filehandler.Reader) ([]page.Page[page.Default], error) {
 	generatorInstance := &generator.Generator{}
 
+	// Add home page
+	htmlContents = append(htmlContents, struct {
+		Url     string
+		Content string
+	}{
+		Url:     "/",
+		Content: "<h1>Welcome to your documentation server</h1>",
+	})
+
 	menu, err := createMenu(htmlContents, generatorInstance)
 
 	if err != nil {
 		return nil, fmt.Errorf("error generating menu: %v", err)
 	}
 
-	template := &page.Template{}
-	defaultTemplate := template.GetDefault(&fileReader)
+	pages, err := createDefaultPages(htmlContents, menu, generatorInstance, fileReader)
 
-	pages := make([]page.Page[page.Default], 0)
-
-	for _, htmlContent := range htmlContents {
-		content := generator.Content{Html: htmlContent.Content}
-
-		generatorInstance.SetStrategy(&content)
-		html, err := generatorInstance.RenderHTML()
-
-		if err != nil {
-			return nil, fmt.Errorf("error generating content: %v", err)
-		}
-
-		splitedUrl := strings.Split(htmlContent.Url, "/")
-
-		title := cases.Title(language.English, cases.Compact).String(splitedUrl[len(splitedUrl)-1])
-
-		pageDefault := page.Default{
-			Title:   title,
-			Content: html,
-			Menu:    menu,
-		}
-
-		page := page.Page[page.Default]{
-			Title: title,
-			Url:   htmlContent.Url,
-			Data:  pageDefault,
-		}
-
-		err = page.Assemble(defaultTemplate)
-
-		if err != nil {
-			return nil, fmt.Errorf("error assembling page: %v", err)
-		}
-
-		pages = append(pages, page)
+	if err != nil {
+		return nil, fmt.Errorf("error generating pages: %v", err)
 	}
 
 	return pages, nil
@@ -167,4 +142,54 @@ func extractUrls(contents []struct {
 	}
 
 	return urls
+}
+
+func createDefaultPages(htmlContents []struct {
+	Url     string
+	Content string
+},
+	menu template.HTML,
+	generatorInstance *generator.Generator,
+	fileReader filehandler.Reader) ([]page.Page[page.Default], error) {
+	template := &page.Template{}
+	defaultTemplate := template.GetDefault(&fileReader)
+
+	pages := make([]page.Page[page.Default], 0)
+
+	for _, htmlContent := range htmlContents {
+		content := generator.Content{Html: htmlContent.Content}
+
+		generatorInstance.SetStrategy(&content)
+		html, err := generatorInstance.RenderHTML()
+
+		if err != nil {
+			return nil, fmt.Errorf("error rendering content: %v", err)
+		}
+
+		splitedUrl := strings.Split(htmlContent.Url, "/")
+
+		title := cases.Title(language.English, cases.Compact).String(splitedUrl[len(splitedUrl)-1])
+
+		pageDefault := page.Default{
+			Title:   title,
+			Content: html,
+			Menu:    menu,
+		}
+
+		page := page.Page[page.Default]{
+			Title: title,
+			Url:   htmlContent.Url,
+			Data:  pageDefault,
+		}
+
+		err = page.Assemble(defaultTemplate)
+
+		if err != nil {
+			return nil, fmt.Errorf("error assembling page: %v", err)
+		}
+
+		pages = append(pages, page)
+	}
+
+	return pages, nil
 }
