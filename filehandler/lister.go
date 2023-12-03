@@ -5,8 +5,10 @@ import (
 	"path/filepath"
 )
 
+// Lister is a structure that lists files with a specified extension in a directory
 type Lister struct{}
 
+// GetPathsWithExtension returns a list of file paths with a specified extension in the given directory
 func (l *Lister) GetPathsWithExtension(dir string, ext string) ([]Path, error) {
 	files := make([]Path, 0)
 

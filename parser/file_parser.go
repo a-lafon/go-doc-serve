@@ -7,10 +7,12 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// FileParser is a structure that represents a file parser with a specified converter
 type FileParser struct {
 	Converter Converter
 }
 
+// ParseToHTML parses a slice of file contents to HTML format
 func (f *FileParser) ParseToHTML(files []filehandler.ReaderContent, rootDir string) ([]struct {
 	Url     string
 	Content string

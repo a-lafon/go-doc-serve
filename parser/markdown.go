@@ -6,8 +6,10 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
+// Markdown is a structure that represents a Markdown converter
 type Markdown struct{}
 
+// ToHTML converts Markdown content to HTML format
 func (m *Markdown) ToHTML(content string) (string, error) {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)

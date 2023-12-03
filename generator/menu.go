@@ -5,10 +5,12 @@ import (
 	"html/template"
 )
 
+// Menu is a structure representing a menu with a slice of URLs
 type Menu struct {
 	Urls []string
 }
 
+// ToHTML generates HTML for the menu
 func (m *Menu) ToHTML() (template.HTML, error) {
 	linkTemplate := "<li><a href=\"{{.}}\">{{.}}</a></li>"
 	menuTemplate := "<ul>{{range .}}" + linkTemplate + "{{end}}</ul>"

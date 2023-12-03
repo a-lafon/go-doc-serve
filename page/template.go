@@ -7,6 +7,7 @@ import (
 	"github.com/a-lafon/go-doc-serve/filehandler"
 )
 
+// DEFAULT_TEMPLATE_PATH is the default path for HTML templates
 const DEFAULT_TEMPLATE_PATH = "static/html"
 
 type Template struct{}

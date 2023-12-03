@@ -5,18 +5,22 @@ import (
 	"sync"
 )
 
+// ReaderContent represents the content of a file along with its path
 type ReaderContent struct {
 	Path    Path
 	Content string
 }
 
+// ReaderError represents an error that occurred while reading a file
 type ReaderError struct {
 	Path Path
 	Err  error
 }
 
+// Reader is a structure that reads file content and handles multiple file reads concurrently
 type Reader struct{}
 
+// Read reads the content of a file specified by its path
 func (r *Reader) Read(path Path) (string, error) {
 	data, err := os.ReadFile(string(path))
 
@@ -27,6 +31,7 @@ func (r *Reader) Read(path Path) (string, error) {
 	return string(data), nil
 }
 
+// ReadMany reads the contents of multiple files specified by their paths concurrently
 func (r *Reader) ReadMany(paths []Path) ([]ReaderContent, []ReaderError) {
 	contents := make([]ReaderContent, 0)
 	errors := make([]ReaderError, 0)
@@ -56,6 +61,7 @@ func (r *Reader) ReadMany(paths []Path) ([]ReaderContent, []ReaderError) {
 	return contents, errors
 }
 
+// readAsync is a helper function for asynchronous file reading
 func (r *Reader) readAsync(path Path, wg *sync.WaitGroup, c chan<- ReaderContent, errChan chan<- ReaderError) {
 	defer wg.Done()
 	data, err := r.Read(path)
