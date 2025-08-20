@@ -2,6 +2,13 @@
 
 This project is a simple documentation server written in Go that reads Markdown files and generates a documentation website. The server parses Markdown content, converts it to HTML, and serves it with a basic navigation menu.
 
+## Learning Project
+This project was created as a learning exercise to explore Go programming language fundamentals, including:
+- Package organization and modularity
+- Interface design and the Strategy pattern
+- Template rendering and HTTP servers
+- File handling and error management
+
 ## Getting Started
 Follow these steps to run the documentation server:
 
@@ -48,5 +55,3 @@ Access the documentation server at http://localhost:8080 in your web browser.
 - Generates a basic navigation menu based on the available URLs.
 - Serves documentation pages with a simple HTTP server.
 
-## Contributions
-Contributions to this project are welcome. Feel free to open issues or submit pull requests on the GitHub repository.
